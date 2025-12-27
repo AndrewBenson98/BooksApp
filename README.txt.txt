@@ -1,0 +1,1 @@
+This is a basic CRUD app using Springboot. The focus of this app is to Dockerize an application and deploy it to Azure App Service on the cloud.
