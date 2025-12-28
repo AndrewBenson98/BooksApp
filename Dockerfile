@@ -1,34 +1,25 @@
-# ============================
-# 1. Build Stage
-# ============================
-FROM eclipse-temurin:25-jdk AS build
+# Dockerfile for Books App (Spring Boot) using Java 25 and H2 in-memory
+# This Dockerfile expects a built fat jar at target/booksapp-0.0.1-SNAPSHOT.jar
+# Build the jar locally first with: mvn -DskipTests package
+
+# Use a Java 25 runtime image
+FROM eclipse-temurin:25-jre AS runtime
 
 WORKDIR /app
 
-# Copy Maven descriptor first (better caching)
-COPY pom.xml .
-COPY mvnw .
-COPY .mvn .mvn
+# Copy the Spring Boot jar produced by mvn package
+COPY target/booksapp-0.0.1-SNAPSHOT.jar /app/app.jar
 
-# Download dependencies (cached unless pom.xml changes)
-RUN ./mvnw dependency:go-offline
+# Configure H2 in-memory datasource (Spring Boot will pick these up if present)
+ENV SPRING_DATASOURCE_URL=jdbc:h2:mem:booksdb
+ENV SPRING_DATASOURCE_USERNAME=sa
+ENV SPRING_DATASOURCE_PASSWORD=password
 
-# Copy source and build the application
-COPY src src
-RUN ./mvnw clean package -DskipTests
+# JVM tuning (adjust as needed)
+ENV JAVA_OPTS="-Xms256m -Xmx512m"
 
-# ============================
-# 2. Runtime Stage
-# ============================
-FROM eclipse-temurin:25-jre
-
-WORKDIR /app
-
-# Copy the built JAR from the build stage
-COPY --from=build /app/target/*.jar app.jar
-
-# Expose the port your Spring Boot app uses
 EXPOSE 8080
 
-# Run the application
-ENTRYPOINT ["java", "-jar", "app.jar"]
+# Start the app. Using sh -c to allow expansion of JAVA_OPTS
+ENTRYPOINT ["sh", "-c", "exec java $JAVA_OPTS -jar /app/app.jar"]
+

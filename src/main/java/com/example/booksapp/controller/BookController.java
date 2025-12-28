@@ -2,7 +2,6 @@ package com.example.booksapp.controller;
 
 import com.example.booksapp.model.Book;
 import com.example.booksapp.service.BookService;
-import jakarta.servlet.ServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -16,7 +15,7 @@ public class BookController {
     private final BookService bookService;
 
 
-    public BookController(@Autowired BookService bookService, ServletResponse servletResponse) {
+    public BookController(@Autowired BookService bookService) {
         this.bookService = bookService;
     }
 
